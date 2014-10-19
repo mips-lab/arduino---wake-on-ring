@@ -23,13 +23,14 @@ int pin_STATUS3 = 12;
 int pin_STATUS4 = 13;
 
 
-
-int lame = 0;
+int lame;
+int lameNumber;
 char packetBuffer[32];	// Où sont stockés les données reçues.x
 char ReplyBuffer[] = " OK "; // Réponse de l'arduino
 char ReplyOFF[] = " OFF ";
 char ReplyON[] = " ON ";
 int demande = 0;
+String op;
 
 EthernetUDP Udp;
 
@@ -52,17 +53,20 @@ void setup() {
 	pinMode(pin_STATUS4, INPUT);
 }
 
-void sendStatus(lame, lameNumber){
-  int status = digitalRead(lame);
-  Serial.println("status de la lame %d : %d", lameNumber, status);
+void sendStatus(int lame, int lameNumber) {
+  int Status = digitalRead(lame);
+  Serial.print("status de la lame ");
+  Serial.print(lameNumber);
+	Serial.print(" : ");
+	Serial.println(lame);
   Udp.beginPacket(Udp.remoteIP(), 9694);
-  if (status)
+  if (Status)
     {
-      Udp.write(ReplyOn);
+      Udp.write(ReplyON);
     }
   else
     {
-      Udp.write(ReplyOff);
+      Udp.write(ReplyOFF);
     }
   Udp.endPacket();
 }
@@ -71,10 +75,9 @@ void loop() {
 	int packetSize = Udp.parsePacket();
 	if(packetSize) { // Si il y a un paquet
 		Udp.read(packetBuffer,32); // le lire
-		op = packetBuffer.substrings(4);
+//		String op = (packetBuffer[0], packetBuffer[1], packetBuffer[2], packetBuffer[3], '\0');
 		lame = packetBuffer[4]-'0'; // et convertir le 5e caractére en chiffre (char -> int)
-		switch(op) {
-		case "lame":
+		if(op == "lame") {
 		  switch (lame) {
 		  case 1:
 		    pin_LAME1 = HIGH;
@@ -105,23 +108,22 @@ void loop() {
 		  Udp.beginPacket(Udp.remoteIP(), 9694);
 		  Udp.write(ReplyBuffer);
 		  Udp.endPacket();
-		  break;
-
-		case "stat":
+	  } else if(op == "stat") {
 		  switch(lame) {
  		  case 1:
-		    sendStatus(pin_STATUS1, 1)
+		    sendStatus(pin_STATUS1, 1);
 		    break;
 		  case 2:
-		    sendStatus(pin_STATUS2, 2)
+		    sendStatus(pin_STATUS2, 2);
 		    break;
 		  case 3:
-		    sendStatus(pin_STATUS3, 3)
+		    sendStatus(pin_STATUS3, 3);
 		    break;
 		  case 4:
-		    sendStatus(pin_STATUS4, 4)
+		    sendStatus(pin_STATUS4, 4);
 		    break;
 		  }
 	}
+}
 	delay(10);
 }
