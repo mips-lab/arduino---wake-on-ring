@@ -75,7 +75,7 @@ void loop() {
 	int packetSize = Udp.parsePacket();
 	if(packetSize) { // Si il y a un paquet
 		Udp.read(packetBuffer,32); // le lire
-		op = String(String(packetBuffer[0]) + String(packetBuffer[1]) + String(packetBuffer[2]) + String(packetBuffer[3])) ;
+		op = String(packetBuffer).substring(0,4);
 		lame = packetBuffer[4]-'0'; // et convertir le 5e caractére en chiffre (char -> int)
 		if(op == "lame") {
 		  switch (lame) {
